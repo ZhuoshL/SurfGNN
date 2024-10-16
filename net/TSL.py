@@ -72,10 +72,16 @@ class Standard_GPool(nn.Module):
         x2 = x_batch[:, self.neigh_orders[gap_2 * self.num_neighbors:gap_3 * self.num_neighbors], :]
         x = torch.cat((x1, x2), dim=1).view(batch_num, down_nodes_num, self.num_neighbors, feature_num)
 
+        x_less1 = x[:, 0:12, :, :]
+        x_less2 = x[:, gap_1:gap_1+12, :, :]
+
         if self.pooling_type == "mean":
             x = torch.mean(x, 2)
-        if self.pooling_type == "max":
-            x = torch.max(x, 2)
+            x_l1 = torch.sum(x_less1, 2) / (self.num_neighbors - 1)
+            x_l2 = torch.sum(x_less2, 2) / (self.num_neighbors - 1)
+            x[:, 0:12, :] = x_l1
+            x[:, gap_1:gap_1+12, :] = x_l2
+      
 
         assert (x.size() == torch.Size([batch_num, down_nodes_num, feature_num]))
         x = x.view(-1, feature_num)
@@ -97,7 +103,7 @@ class Global_GConv(nn.Module):
 
         self.edge_num = np.load(os.path.join(edge_file, neigh_file[str(self.num_nodes)] + '.npy')).shape[1] + 1
         self.weight = nn.Linear(self.edge_num * self.in_feats, self.out_feats)
-        # self.reset_parameters(self.weight)
+        self.reset_parameters(self.weight)
 
     def reset_parameters(self, m):
         if type(m) == nn.Linear:
