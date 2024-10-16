@@ -85,9 +85,9 @@ class SurfGNN(nn.Module):
         self.pool_score = TopKPooling(self.dim_RSL[2], ratio=1.0, multiplier=1, nonlinearity=torch.sigmoid)
         self.fully = nn.ModuleList([torch.nn.Linear(self.dim_RSL[2] * 2, self.dim_fully),
                                    torch.nn.Linear(self.dim_fully, self.nclass)])
-        # for ff in range(self.indim):
-        #     for rsl in range(self.num_RSL):
-        #         self.init_parameters(self.mlp_gconv_rsl[ff][rsl])
+        for ff in range(self.indim):
+            for rsl in range(self.num_RSL):
+                self.init_parameters(self.mlp_gconv_rsl[ff][rsl])
 
     def init_parameters(self, model):
         for m in model:
